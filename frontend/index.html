@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中间件管理平台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .topology-container {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-3 sidebar">
+                <h3 class="p-3">中间件管理平台</h3>
+                <nav>
+                    <a href="#" onclick="showSection('dashboard')">仪表盘</a>
+                    <a href="#" onclick="showSection('middleware')">中间件管理</a>
+                    <a href="#" onclick="showSection('config')">配置管理</a>
+                    <a href="#" onclick="showSection('topology')">拓扑图</a>
+                </nav>
+            </div>
+            
+            <!-- 主内容区 -->
+            <div class="col-md-9 content">
+                <!-- 仪表盘 -->
+                <div id="dashboard" class="section">
+                    <h2>仪表盘</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">中间件总数</h5>
+                                    <p class="card-text" id="middleware-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">活跃中间件</h5>
+                                    <p class="card-text" id="active-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">配置文件总数</h5>
+                                    <p class="card-text" id="config-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 中间件管理 -->
+                <div id="middleware" class="section" style="display: none;">
+                    <h2>中间件管理</h2>
+                    <button class="btn btn-primary mb-3" onclick="openAddMiddlewareModal()">添加中间件</button>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>类型</th>
+                                <th>版本</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="middleware-table-body">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 配置管理 -->
+                <div id="config" class="section" style="display: none;">
+                    <h2>配置管理</h2>
+                    <div class="mb-3">
+                        <label for="middleware-select" class="form-label">选择中间件</label>
+                        <select id="middleware-select" class="form-select" onchange="loadMiddlewareConfigs()">
+                            <option value="">请选择中间件</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary mb-3" onclick="openAddConfigModal()">添加配置</button>
+                    <button class="btn btn-secondary mb-3" onclick="openUploadConfigModal()">上传配置文件</button>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>版本</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="config-table-body">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 拓扑图 -->
+                <div id="topology" class="section" style="display: none;">
+                    <h2>中间件拓扑图</h2>
+                    <div class="topology-container" id="topology-graph">
+                        <!-- 拓扑图将在这里显示 -->
+                        <p class="text-center mt-5">加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加中间件模态框 -->
+    <div class="modal fade" id="addMiddlewareModal" tabindex="-1" aria-labelledby="addMiddlewareModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMiddlewareModalLabel">添加中间件</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addMiddlewareForm">
+                        <div class="mb-3">
+                            <label for="middleware-name" class="form-label">名称</label>
+                            <input type="text" class="form-control" id="middleware-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-type" class="form-label">类型</label>
+                            <input type="text" class="form-control" id="middleware-type" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-version" class="form-label">版本</label>
+                            <input type="text" class="form-control" id="middleware-version" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-status" class="form-label">状态</label>
+                            <select class="form-select" id="middleware-status" required>
+                                <option value="running">运行中</option>
+                                <option value="stopped">已停止</option>
+                                <option value="error">错误</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-description" class="form-label">描述</label>
+                            <textarea class="form-control" id="middleware-description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddMiddleware()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加配置模态框 -->
+    <div class="modal fade" id="addConfigModal" tabindex="-1" aria-labelledby="addConfigModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addConfigModalLabel">添加配置</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addConfigForm">
+                        <div class="mb-3">
+                            <label for="config-name" class="form-label">名称</label>
+                            <input type="text" class="form-control" id="config-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="config-content" class="form-label">内容</label>
+                            <textarea class="form-control" id="config-content" rows="10" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddConfig()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 上传配置文件模态框 -->
+    <div class="modal fade" id="uploadConfigModal" tabindex="-1" aria-labelledby="uploadConfigModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadConfigModalLabel">上传配置文件</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadConfigForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="config-file" class="form-label">选择文件</label>
+                            <input type="file" class="form-control" id="config-file" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitUploadConfig()">上传</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 更新策略模态框 -->
+    <div class="modal fade" id="strategyModal" tabindex="-1" aria-labelledby="strategyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="strategyModalLabel">选择更新策略</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="strategyForm">
+                        <div class="mb-3">
+                            <label class="form-label">更新策略</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="strategy" id="strategy-immediate" value="immediate" checked>
+                                <label class="form-check-label" for="strategy-immediate">立即更新</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="strategy" id="strategy-scheduled" value="scheduled">
+                                <label class="form-check-label" for="strategy-scheduled">定时更新</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="strategy" id="strategy-rolling" value="rolling">
+                                <label class="form-check-label" for="strategy-rolling">滚动更新</label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="scheduled-time-container" style="display: none;">
+                            <label for="scheduled-time" class="form-label">定时时间</label>
+                            <input type="datetime-local" class="form-control" id="scheduled-time">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitStrategy()">应用</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script>
+        // API基础URL
+        const API_BASE_URL = 'http://localhost:8000/api';
+        let currentConfigId = null;
+        
+        // 显示指定 section
+        function showSection(sectionId) {
+            // 隐藏所有 section
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            // 显示选中的 section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // 加载对应数据
+            if (sectionId === 'dashboard') {
+                loadDashboardData();
+            } else if (sectionId === 'middleware') {
+                loadMiddlewareData();
+            } else if (sectionId === 'config') {
+                loadMiddlewareSelect();
+            } else if (sectionId === 'topology') {
+                loadTopology();
+            }
+        }
+        
+        // 加载仪表盘数据
+        async function loadDashboardData() {
+            try {
+                // 获取中间件总数
+                const middlewareResponse = await fetch(`${API_BASE_URL}/middleware/`);
+                const middlewares = await middlewareResponse.json();
+                document.getElementById('middleware-count').textContent = middlewares.length;
+                
+                // 计算活跃中间件数
+                const activeCount = middlewares.filter(m => m.status === 'running').length;
+                document.getElementById('active-count').textContent = activeCount;
+                
+                // 获取配置文件总数
+                let configCount = 0;
+                for (const middleware of middlewares) {
+                    const configResponse = await fetch(`${API_BASE_URL}/config/middleware/${middleware.id}`);
+                    const configs = await configResponse.json();
+                    configCount += configs.length;
+                }
+                document.getElementById('config-count').textContent = configCount;
+            } catch (error) {
+                console.error('加载仪表盘数据失败:', error);
+            }
+        }
+        
+        // 加载中间件数据
+        async function loadMiddlewareData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/`);
+                const middlewares = await response.json();
+                const tbody = document.getElementById('middleware-table-body');
+                tbody.innerHTML = '';
+                
+                middlewares.forEach(middleware => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${middleware.id}</td>
+                        <td>${middleware.name}</td>
+                        <td>${middleware.type}</td>
+                        <td>${middleware.version}</td>
+                        <td>${middleware.status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editMiddleware(${middleware.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMiddleware(${middleware.id})">删除</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('加载中间件数据失败:', error);
+            }
+        }
+        
+        // 加载中间件选择框
+        async function loadMiddlewareSelect() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/`);
+                const middlewares = await response.json();
+                const select = document.getElementById('middleware-select');
+                select.innerHTML = '<option value="">请选择中间件</option>';
+                
+                middlewares.forEach(middleware => {
+                    const option = document.createElement('option');
+                    option.value = middleware.id;
+                    option.textContent = `${middleware.name} (${middleware.type})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('加载中间件选择框失败:', error);
+            }
+        }
+        
+        // 加载中间件配置
+        async function loadMiddlewareConfigs() {
+            const middlewareId = document.getElementById('middleware-select').value;
+            if (!middlewareId) {
+                document.getElementById('config-table-body').innerHTML = '';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/config/middleware/${middlewareId}`);
+                const configs = await response.json();
+                const tbody = document.getElementById('config-table-body');
+                tbody.innerHTML = '';
+                
+                configs.forEach(config => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${config.id}</td>
+                        <td>${config.name}</td>
+                        <td>${config.version}</td>
+                        <td>${new Date(config.updated_at).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="downloadConfig(${config.id})">下载</button>
+                            <button class="btn btn-sm btn-warning" onclick="editConfig(${config.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteConfig(${config.id})">删除</button>
+                            <button class="btn btn-sm btn-primary" onclick="openStrategyModal(${config.id})">应用策略</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('加载配置数据失败:', error);
+            }
+        }
+        
+        // 加载拓扑图
+        async function loadTopology() {
+            try {
+                // 获取中间件数据
+                const middlewareResponse = await fetch(`${API_BASE_URL}/middleware/`);
+                const middlewares = await middlewareResponse.json();
+                
+                // 获取关系数据
+                const relationResponse = await fetch(`${API_BASE_URL}/middleware/relations/all`);
+                const relations = await relationResponse.json();
+                
+                // 准备拓扑图数据
+                const nodes = middlewares.map(m => ({
+                    id: m.id,
+                    name: m.name,
+                    category: m.type
+                }));
+                
+                const links = relations.map(r => ({
+                    source: r.source_id,
+                    target: r.target_id,
+                    value: r.relation_type
+                }));
+                
+                // 初始化ECharts实例
+                const chart = echarts.init(document.getElementById('topology-graph'));
+                
+                // 配置项
+                const option = {
+                    title: {
+                        text: '中间件拓扑关系',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: function(params) {
+                            if (params.dataType === 'node') {
+                                return `中间件: ${params.name}`;
+                            } else {
+                                return `关系: ${params.value}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        data: [...new Set(middlewares.map(m => m.type))],
+                        orient: 'vertical',
+                        left: 10
+                    },
+                    series: [{
+                        type: 'graph',
+                        layout: 'force',
+                        data: nodes,
+                        links: links,
+                        roam: true,
+                        label: {
+                            show: true,
+                            position: 'right'
+                        },
+                        lineStyle: {
+                            color: 'source',
+                            curveness: 0.3
+                        },
+                        emphasis: {
+                            focus: 'adjacency',
+                            lineStyle: {
+                                width: 4
+                            }
+                        }
+                    }]
+                };
+                
+                // 渲染图表
+                chart.setOption(option);
+                
+                // 响应式
+                window.addEventListener('resize', () => {
+                    chart.resize();
+                });
+            } catch (error) {
+                console.error('加载拓扑图失败:', error);
+                document.getElementById('topology-graph').innerHTML = '<p class="text-center mt-5 text-danger">加载拓扑图失败</p>';
+            }
+        }
+        
+        // 打开添加中间件模态框
+        function openAddMiddlewareModal() {
+            document.getElementById('addMiddlewareForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('addMiddlewareModal'));
+            modal.show();
+        }
+        
+        // 提交添加中间件
+        async function submitAddMiddleware() {
+            const form = document.getElementById('addMiddlewareForm');
+            const data = {
+                name: document.getElementById('middleware-name').value,
+                type: document.getElementById('middleware-type').value,
+                version: document.getElementById('middleware-version').value,
+                status: document.getElementById('middleware-status').value,
+                description: document.getElementById('middleware-description').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addMiddlewareModal'));
+                    modal.hide();
+                    loadMiddlewareData();
+                    alert('中间件添加成功');
+                } else {
+                    const error = await response.json();
+                    alert('添加失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('添加中间件失败:', error);
+                alert('添加失败: 网络错误');
+            }
+        }
+        
+        // 打开添加配置模态框
+        function openAddConfigModal() {
+            const middlewareId = document.getElementById('middleware-select').value;
+            if (!middlewareId) {
+                alert('请先选择中间件');
+                return;
+            }
+            document.getElementById('addConfigForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('addConfigModal'));
+            modal.show();
+        }
+        
+        // 提交添加配置
+        async function submitAddConfig() {
+            const middlewareId = document.getElementById('middleware-select').value;
+            const data = {
+                middleware_id: parseInt(middlewareId),
+                name: document.getElementById('config-name').value,
+                content: document.getElementById('config-content').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/config/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addConfigModal'));
+                    modal.hide();
+                    loadMiddlewareConfigs();
+                    alert('配置添加成功');
+                } else {
+                    const error = await response.json();
+                    alert('添加失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('添加配置失败:', error);
+                alert('添加失败: 网络错误');
+            }
+        }
+        
+        // 打开上传配置文件模态框
+        function openUploadConfigModal() {
+            const middlewareId = document.getElementById('middleware-select').value;
+            if (!middlewareId) {
+                alert('请先选择中间件');
+                return;
+            }
+            document.getElementById('uploadConfigForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('uploadConfigModal'));
+            modal.show();
+        }
+        
+        // 提交上传配置文件
+        async function submitUploadConfig() {
+            const middlewareId = document.getElementById('middleware-select').value;
+            const fileInput = document.getElementById('config-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/config/upload/${middlewareId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadConfigModal'));
+                    modal.hide();
+                    loadMiddlewareConfigs();
+                    alert('文件上传成功');
+                } else {
+                    const error = await response.json();
+                    alert('上传失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('上传配置文件失败:', error);
+                alert('上传失败: 网络错误');
+            }
+        }
+        
+        // 下载配置文件
+        function downloadConfig(configId) {
+            window.open(`${API_BASE_URL}/config/${configId}/download`);
+        }
+        
+        // 打开更新策略模态框
+        function openStrategyModal(configId) {
+            currentConfigId = configId;
+            document.getElementById('strategyForm').reset();
+            document.getElementById('scheduled-time-container').style.display = 'none';
+            const modal = new bootstrap.Modal(document.getElementById('strategyModal'));
+            modal.show();
+        }
+        
+        // 策略选择变化
+        document.querySelectorAll('input[name="strategy"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'scheduled') {
+                    document.getElementById('scheduled-time-container').style.display = 'block';
+                } else {
+                    document.getElementById('scheduled-time-container').style.display = 'none';
+                }
+            });
+        });
+        
+        // 提交策略
+        async function submitStrategy() {
+            if (!currentConfigId) return;
+            
+            const strategy = document.querySelector('input[name="strategy"]:checked').value;
+            let scheduledTime = null;
+            if (strategy === 'scheduled') {
+                scheduledTime = document.getElementById('scheduled-time').value;
+            }
+            
+            const data = {
+                strategy: strategy,
+                scheduled_time: scheduledTime
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/config/${currentConfigId}/apply-strategy`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('strategyModal'));
+                    modal.hide();
+                    alert('策略应用成功');
+                } else {
+                    const error = await response.json();
+                    alert('应用失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('应用策略失败:', error);
+                alert('应用失败: 网络错误');
+            }
+        }
+        
+        // 删除中间件
+        async function deleteMiddleware(middlewareId) {
+            if (!confirm('确定要删除这个中间件吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/${middlewareId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadMiddlewareData();
+                    alert('中间件删除成功');
+                } else {
+                    const error = await response.json();
+                    alert('删除失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('删除中间件失败:', error);
+                alert('删除失败: 网络错误');
+            }
+        }
+        
+        // 删除配置
+        async function deleteConfig(configId) {
+            if (!confirm('确定要删除这个配置文件吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/config/${configId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadMiddlewareConfigs();
+                    alert('配置文件删除成功');
+                } else {
+                    const error = await response.json();
+                    alert('删除失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('删除配置文件失败:', error);
+                alert('删除失败: 网络错误');
+            }
+        }
+        
+        // 页面加载时默认显示仪表盘
+        window.onload = function() {
+            showSection('dashboard');
+        };
+    </script>
+</body>
+</html>
