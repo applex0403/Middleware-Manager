@@ -49,6 +49,7 @@
                     <a href="#" onclick="showSection('middleware')">中间件管理</a>
                     <a href="#" onclick="showSection('config')">配置管理</a>
                     <a href="#" onclick="showSection('topology')">拓扑图</a>
+                    <a href="#" onclick="showSection('combinations')">中间件组合方案</a>
                 </nav>
             </div>
             
@@ -141,6 +142,96 @@
                         <p class="text-center mt-5">加载中...</p>
                     </div>
                 </div>
+                
+                <!-- 主流中间件组合方案 -->
+                <div id="combinations" class="section" style="display: none;">
+                    <h2>主流中间件组合方案</h2>
+                    <div class="row">
+                        <!-- 中小型项目 / 传统微服务 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title">1. 中小型项目 / 传统微服务</h5>
+                                    <small class="text-white-50">最常用组合</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Nginx + Spring Cloud Gateway + Nacos + OpenFeign + Redis + RabbitMQ + ShardingSphere + XXL-Job + Sentinel</p>
+                                    <button class="btn btn-primary btn-sm" onclick="loadCombination('small')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 高并发电商 / 秒杀 / 互联网业务 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="card-title">2. 高并发电商 / 秒杀 / 互联网业务</h5>
+                                    <small class="text-white-50">高并发场景</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Nginx + Gateway + Nacos + Sentinel + Redis (+ 本地缓存) + Kafka + RocketMQ + Seata + ShardingSphere + Elasticsearch</p>
+                                    <button class="btn btn-danger btn-sm" onclick="loadCombination('high')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 阿里系技术栈 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title">3. 阿里系技术栈</h5>
+                                    <small class="text-white-50">阿里生态</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Dubbo + Nacos + RocketMQ + Sentinel + Canal + Seata + Redis</p>
+                                    <button class="btn btn-success btn-sm" onclick="loadCombination('ali')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 大数据 / 日志 / 流处理 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="card-title">4. 大数据 / 日志 / 流处理</h5>
+                                    <small class="text-white-50">数据处理场景</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Kafka + Zookeeper + Flink/Spark + Elasticsearch + Kibana</p>
+                                    <button class="btn btn-info btn-sm" onclick="loadCombination('bigdata')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 云原生轻量组合 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="card-title">5. 云原生轻量组合</h5>
+                                    <small class="text-white-50">云原生场景</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Nginx/Kong + Consul + Redis + RabbitMQ + Prometheus + Grafana</p>
+                                    <button class="btn btn-warning btn-sm" onclick="loadCombination('cloud')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 极简稳定组合 -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="card-title">6. 极简稳定组合</h5>
+                                    <small class="text-white-50">小公司快速落地</small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Nginx + Redis + RabbitMQ + XXL-Job + MyCat</p>
+                                    <button class="btn btn-secondary btn-sm" onclick="loadCombination('simple')">加载此组合</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -157,11 +248,27 @@
                     <form id="addMiddlewareForm">
                         <div class="mb-3">
                             <label for="middleware-name" class="form-label">名称</label>
-                            <input type="text" class="form-control" id="middleware-name" required>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="middleware-name" required>
+                                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#middlewareTemplatesModal">常用中间件</button>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="middleware-type" class="form-label">类型</label>
-                            <input type="text" class="form-control" id="middleware-type" required>
+                            <select class="form-select" id="middleware-type" required>
+                                <option value="">请选择类型</option>
+                                <option value="网关 / 流量入口">网关 / 流量入口</option>
+                                <option value="注册中心 & 配置中心">注册中心 & 配置中心</option>
+                                <option value="服务通信 & RPC">服务通信 & RPC</option>
+                                <option value="消息队列 MQ">消息队列 MQ</option>
+                                <option value="分布式缓存">分布式缓存</option>
+                                <option value="数据库中间件">数据库中间件</option>
+                                <option value="服务限流 / 熔断 / 降级">服务限流 / 熔断 / 降级</option>
+                                <option value="分布式事务">分布式事务</option>
+                                <option value="定时任务调度">定时任务调度</option>
+                                <option value="搜索 & 日志">搜索 & 日志</option>
+                                <option value="监控 & 可观测">监控 & 可观测</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="middleware-version" class="form-label">版本</label>
@@ -241,6 +348,213 @@
         </div>
     </div>
     
+    <!-- 常用中间件模板模态框 -->
+    <div class="modal fade" id="middlewareTemplatesModal" tabindex="-1" aria-labelledby="middlewareTemplatesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="middlewareTemplatesModalLabel">常用中间件模板</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 网关 / 流量入口 -->
+                    <div class="mb-4">
+                        <h6>1. 网关 / 流量入口</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Nginx', '网关 / 流量入口')">Nginx</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('OpenResty', '网关 / 流量入口')">OpenResty</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Spring Cloud Gateway', '网关 / 流量入口')">Spring Cloud Gateway</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Kong', '网关 / 流量入口')">Kong</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('APISIX', '网关 / 流量入口')">APISIX</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 注册中心 & 配置中心 -->
+                    <div class="mb-4">
+                        <h6>2. 注册中心 & 配置中心</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Nacos', '注册中心 & 配置中心')">Nacos</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Eureka', '注册中心 & 配置中心')">Eureka</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Consul', '注册中心 & 配置中心')">Consul</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('ZooKeeper', '注册中心 & 配置中心')">ZooKeeper</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Apollo', '注册中心 & 配置中心')">Apollo</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 服务通信 & RPC -->
+                    <div class="mb-4">
+                        <h6>3. 服务通信 & RPC</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Dubbo', '服务通信 & RPC')">Dubbo</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Spring Cloud OpenFeign', '服务通信 & RPC')">Spring Cloud OpenFeign</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('gRPC', '服务通信 & RPC')">gRPC</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Thrift', '服务通信 & RPC')">Thrift</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 消息队列 MQ -->
+                    <div class="mb-4">
+                        <h6>4. 消息队列 MQ</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('RabbitMQ', '消息队列 MQ')">RabbitMQ</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('RocketMQ', '消息队列 MQ')">RocketMQ</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Kafka', '消息队列 MQ')">Kafka</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('ActiveMQ', '消息队列 MQ')">ActiveMQ</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分布式缓存 -->
+                    <div class="mb-4">
+                        <h6>5. 分布式缓存</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Redis', '分布式缓存')">Redis</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Redis Cluster', '分布式缓存')">Redis Cluster</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Codis', '分布式缓存')">Codis</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Memcached', '分布式缓存')">Memcached</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据库中间件 -->
+                    <div class="mb-4">
+                        <h6>6. 数据库中间件</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('ShardingSphere', '数据库中间件')">ShardingSphere</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('MyCat', '数据库中间件')">MyCat</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Canal', '数据库中间件')">Canal</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 服务限流 / 熔断 / 降级 -->
+                    <div class="mb-4">
+                        <h6>7. 服务限流 / 熔断 / 降级</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Sentinel', '服务限流 / 熔断 / 降级')">Sentinel</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Hystrix / Resilience4j', '服务限流 / 熔断 / 降级')">Hystrix / Resilience4j</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分布式事务 -->
+                    <div class="mb-4">
+                        <h6>8. 分布式事务</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Seata', '分布式事务')">Seata</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('RocketMQ 事务消息', '分布式事务')">RocketMQ 事务消息</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 定时任务调度 -->
+                    <div class="mb-4">
+                        <h6>9. 定时任务调度</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('XXL-Job', '定时任务调度')">XXL-Job</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Elastic-Job', '定时任务调度')">Elastic-Job</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Quartz', '定时任务调度')">Quartz</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 搜索 & 日志 -->
+                    <div class="mb-4">
+                        <h6>10. 搜索 & 日志</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Elasticsearch', '搜索 & 日志')">Elasticsearch</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Solr', '搜索 & 日志')">Solr</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 监控 & 可观测 -->
+                    <div class="mb-4">
+                        <h6>11. 监控 & 可观测</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Prometheus + Grafana', '监控 & 可观测')">Prometheus + Grafana</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('SkyWalking', '监控 & 可观测')">SkyWalking</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('Pinpoint', '监控 & 可观测')">Pinpoint</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="selectMiddleware('ELK', '监控 & 可观测')">ELK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 更新策略模态框 -->
     <div class="modal fade" id="strategyModal" tabindex="-1" aria-labelledby="strategyModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -286,6 +600,215 @@
         // API基础URL
         const API_BASE_URL = 'http://localhost:8000/api';
         let currentConfigId = null;
+        
+        // 选择常用中间件
+        function selectMiddleware(name, type) {
+            document.getElementById('middleware-name').value = name;
+            document.getElementById('middleware-type').value = type;
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('middlewareTemplatesModal'));
+            modal.hide();
+        }
+        
+        // 加载中间件组合方案
+        function loadCombination(type) {
+            // 切换到拓扑图页面
+            showSection('topology');
+            
+            // 初始化ECharts实例
+            const chart = echarts.init(document.getElementById('topology-graph'));
+            
+            let nodes = [];
+            let links = [];
+            let categories = [];
+            
+            // 根据组合类型设置数据
+            switch(type) {
+                case 'small':
+                    // 中小型项目 / 传统微服务
+                    nodes = [
+                        { id: 1, name: 'Nginx', category: '网关' },
+                        { id: 2, name: 'Spring Cloud Gateway', category: '网关' },
+                        { id: 3, name: 'Nacos', category: '注册中心' },
+                        { id: 4, name: 'OpenFeign', category: 'RPC' },
+                        { id: 5, name: 'Redis', category: '缓存' },
+                        { id: 6, name: 'RabbitMQ', category: '消息队列' },
+                        { id: 7, name: 'ShardingSphere', category: '数据库中间件' },
+                        { id: 8, name: 'XXL-Job', category: '定时任务' },
+                        { id: 9, name: 'Sentinel', category: '限流熔断' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '转发' },
+                        { source: 2, target: 4, value: '调用' },
+                        { source: 4, target: 3, value: '注册' },
+                        { source: 4, target: 5, value: '缓存' },
+                        { source: 4, target: 6, value: '消息' },
+                        { source: 4, target: 7, value: '数据库' },
+                        { source: 4, target: 9, value: '保护' },
+                        { source: 8, target: 4, value: '调度' }
+                    ];
+                    categories = ['网关', '注册中心', 'RPC', '缓存', '消息队列', '数据库中间件', '定时任务', '限流熔断'];
+                    break;
+                
+                case 'high':
+                    // 高并发电商 / 秒杀 / 互联网业务
+                    nodes = [
+                        { id: 1, name: 'Nginx', category: '网关' },
+                        { id: 2, name: 'Gateway', category: '网关' },
+                        { id: 3, name: 'Nacos', category: '注册中心' },
+                        { id: 4, name: 'Sentinel', category: '限流熔断' },
+                        { id: 5, name: 'Redis', category: '缓存' },
+                        { id: 6, name: 'Kafka', category: '消息队列' },
+                        { id: 7, name: 'RocketMQ', category: '消息队列' },
+                        { id: 8, name: 'Seata', category: '分布式事务' },
+                        { id: 9, name: 'ShardingSphere', category: '数据库中间件' },
+                        { id: 10, name: 'Elasticsearch', category: '搜索' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '转发' },
+                        { source: 2, target: 4, value: '保护' },
+                        { source: 4, target: 3, value: '注册' },
+                        { source: 4, target: 5, value: '缓存' },
+                        { source: 4, target: 6, value: '消息' },
+                        { source: 4, target: 7, value: '消息' },
+                        { source: 4, target: 8, value: '事务' },
+                        { source: 8, target: 9, value: '数据库' },
+                        { source: 6, target: 10, value: '存储' }
+                    ];
+                    categories = ['网关', '注册中心', '限流熔断', '缓存', '消息队列', '分布式事务', '数据库中间件', '搜索'];
+                    break;
+                
+                case 'ali':
+                    // 阿里系技术栈
+                    nodes = [
+                        { id: 1, name: 'Dubbo', category: 'RPC' },
+                        { id: 2, name: 'Nacos', category: '注册中心' },
+                        { id: 3, name: 'RocketMQ', category: '消息队列' },
+                        { id: 4, name: 'Sentinel', category: '限流熔断' },
+                        { id: 5, name: 'Canal', category: '数据库中间件' },
+                        { id: 6, name: 'Seata', category: '分布式事务' },
+                        { id: 7, name: 'Redis', category: '缓存' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '注册' },
+                        { source: 1, target: 4, value: '保护' },
+                        { source: 1, target: 7, value: '缓存' },
+                        { source: 1, target: 3, value: '消息' },
+                        { source: 1, target: 6, value: '事务' },
+                        { source: 5, target: 3, value: '同步' }
+                    ];
+                    categories = ['RPC', '注册中心', '消息队列', '限流熔断', '数据库中间件', '分布式事务', '缓存'];
+                    break;
+                
+                case 'bigdata':
+                    // 大数据 / 日志 / 流处理
+                    nodes = [
+                        { id: 1, name: 'Kafka', category: '消息队列' },
+                        { id: 2, name: 'Zookeeper', category: '协调服务' },
+                        { id: 3, name: 'Flink/Spark', category: '流处理' },
+                        { id: 4, name: 'Elasticsearch', category: '搜索' },
+                        { id: 5, name: 'Kibana', category: '可视化' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '协调' },
+                        { source: 1, target: 3, value: '数据' },
+                        { source: 3, target: 4, value: '存储' },
+                        { source: 4, target: 5, value: '展示' }
+                    ];
+                    categories = ['消息队列', '协调服务', '流处理', '搜索', '可视化'];
+                    break;
+                
+                case 'cloud':
+                    // 云原生轻量组合
+                    nodes = [
+                        { id: 1, name: 'Nginx/Kong', category: '网关' },
+                        { id: 2, name: 'Consul', category: '注册中心' },
+                        { id: 3, name: 'Redis', category: '缓存' },
+                        { id: 4, name: 'RabbitMQ', category: '消息队列' },
+                        { id: 5, name: 'Prometheus', category: '监控' },
+                        { id: 6, name: 'Grafana', category: '可视化' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '注册' },
+                        { source: 1, target: 3, value: '缓存' },
+                        { source: 1, target: 4, value: '消息' },
+                        { source: 1, target: 5, value: '监控' },
+                        { source: 5, target: 6, value: '展示' }
+                    ];
+                    categories = ['网关', '注册中心', '缓存', '消息队列', '监控', '可视化'];
+                    break;
+                
+                case 'simple':
+                    // 极简稳定组合
+                    nodes = [
+                        { id: 1, name: 'Nginx', category: '网关' },
+                        { id: 2, name: 'Redis', category: '缓存' },
+                        { id: 3, name: 'RabbitMQ', category: '消息队列' },
+                        { id: 4, name: 'XXL-Job', category: '定时任务' },
+                        { id: 5, name: 'MyCat', category: '数据库中间件' }
+                    ];
+                    links = [
+                        { source: 1, target: 2, value: '缓存' },
+                        { source: 1, target: 3, value: '消息' },
+                        { source: 1, target: 5, value: '数据库' },
+                        { source: 4, target: 1, value: '调度' }
+                    ];
+                    categories = ['网关', '缓存', '消息队列', '定时任务', '数据库中间件'];
+                    break;
+            }
+            
+            // 配置项
+            const option = {
+                title: {
+                    text: '中间件组合方案',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        if (params.dataType === 'node') {
+                            return `中间件: ${params.name}`;
+                        } else {
+                            return `关系: ${params.value}`;
+                        }
+                    }
+                },
+                legend: {
+                    data: categories,
+                    orient: 'vertical',
+                    left: 10
+                },
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: nodes,
+                    links: links,
+                    roam: true,
+                    label: {
+                        show: true,
+                        position: 'right'
+                    },
+                    lineStyle: {
+                        color: 'source',
+                        curveness: 0.3
+                    },
+                    emphasis: {
+                        focus: 'adjacency',
+                        lineStyle: {
+                            width: 4
+                        }
+                    }
+                }]
+            };
+            
+            // 渲染图表
+            chart.setOption(option);
+            
+            // 响应式
+            window.addEventListener('resize', () => {
+                chart.resize();
+            });
+        }
         
         // 显示指定 section
         function showSection(sectionId) {
