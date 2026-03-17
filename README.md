@@ -70,7 +70,7 @@ Middleware-Manager/
 2. 进入仓库：[https://github.com/applex0403/Middleware-Manager](https://github.com/applex0403/Middleware-Manager)
 3. 点击 "Settings" 选项卡
 4. 在左侧菜单中选择 "Pages"
-5. 在 "Branch" 下拉菜单中选择 "master"
+5. 在 "Branch" 下拉菜单中选择 "main"
 6. 在 "Folder" 下拉菜单中选择 "/ (root)"
 7. 点击 "Save"
 8. 等待几分钟后，GitHub Pages 将会部署完成
