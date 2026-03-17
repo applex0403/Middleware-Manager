@@ -1,11 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db, Middleware, MiddlewareRelation
+from database import get_db, Middleware, MiddlewareRelation, MiddlewareGroup
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
 
 router = APIRouter()
+
+# 中间件组基础模型
+class MiddlewareGroupBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+# 中间件组响应模型
+class MiddlewareGroupResponse(MiddlewareGroupBase):
+    id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    
+    class Config:
+        from_attributes = True
 
 # 中间件基础模型
 class MiddlewareBase(BaseModel):
@@ -14,6 +28,9 @@ class MiddlewareBase(BaseModel):
     version: str
     status: str
     description: Optional[str] = None
+    host_ip: Optional[str] = None
+    password: Optional[str] = None
+    group_id: Optional[int] = None
 
 # 中间件响应模型
 class MiddlewareResponse(MiddlewareBase):
@@ -133,3 +150,68 @@ def delete_relation(relation_id: int, db: Session = Depends(get_db)):
     db.delete(db_relation)
     db.commit()
     return {"message": "关系删除成功"}
+
+# 中间件组管理
+# 获取所有中间件组
+@router.get("/groups/", response_model=List[MiddlewareGroupResponse])
+def get_groups(db: Session = Depends(get_db)):
+    return db.query(MiddlewareGroup).all()
+
+# 获取单个中间件组
+@router.get("/groups/{group_id}", response_model=MiddlewareGroupResponse)
+def get_group(group_id: int, db: Session = Depends(get_db)):
+    group = db.query(MiddlewareGroup).filter(MiddlewareGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="中间件组不存在")
+    return group
+
+# 创建中间件组
+@router.post("/groups/", response_model=MiddlewareGroupResponse)
+def create_group(group: MiddlewareGroupBase, db: Session = Depends(get_db)):
+    existing = db.query(MiddlewareGroup).filter(MiddlewareGroup.name == group.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="中间件组名称已存在")
+    
+    db_group = MiddlewareGroup(**group.model_dump())
+    db.add(db_group)
+    db.commit()
+    db.refresh(db_group)
+    return db_group
+
+# 更新中间件组
+@router.put("/groups/{group_id}", response_model=MiddlewareGroupResponse)
+def update_group(group_id: int, group: MiddlewareGroupBase, db: Session = Depends(get_db)):
+    db_group = db.query(MiddlewareGroup).filter(MiddlewareGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="中间件组不存在")
+    
+    if group.name != db_group.name:
+        existing = db.query(MiddlewareGroup).filter(MiddlewareGroup.name == group.name).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="中间件组名称已存在")
+    
+    for key, value in group.model_dump().items():
+        setattr(db_group, key, value)
+    db.commit()
+    db.refresh(db_group)
+    return db_group
+
+# 删除中间件组
+@router.delete("/groups/{group_id}")
+def delete_group(group_id: int, db: Session = Depends(get_db)):
+    db_group = db.query(MiddlewareGroup).filter(MiddlewareGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="中间件组不存在")
+    
+    db.delete(db_group)
+    db.commit()
+    return {"message": "中间件组删除成功"}
+
+# 获取组内的中间件
+@router.get("/groups/{group_id}/middlewares", response_model=List[MiddlewareResponse])
+def get_group_middlewares(group_id: int, db: Session = Depends(get_db)):
+    group = db.query(MiddlewareGroup).filter(MiddlewareGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="中间件组不存在")
+    
+    return db.query(Middleware).filter(Middleware.group_id == group_id).all()

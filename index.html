@@ -47,6 +47,7 @@
                 <nav>
                     <a href="#" onclick="showSection('dashboard')">仪表盘</a>
                     <a href="#" onclick="showSection('middleware')">中间件管理</a>
+                    <a href="#" onclick="showSection('groups')">中间件组管理</a>
                     <a href="#" onclick="showSection('config')">配置管理</a>
                     <a href="#" onclick="showSection('topology')">拓扑图</a>
                     <a href="#" onclick="showSection('combinations')">中间件组合方案</a>
@@ -90,6 +91,7 @@
                 <div id="middleware" class="section" style="display: none;">
                     <h2>中间件管理</h2>
                     <button class="btn btn-primary mb-3" onclick="openAddMiddlewareModal()">添加中间件</button>
+                    <button class="btn btn-info mb-3" onclick="openGroupManagementModal()">管理组</button>
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -98,10 +100,32 @@
                                 <th>类型</th>
                                 <th>版本</th>
                                 <th>状态</th>
+                                <th>主机IP</th>
+                                <th>所属组</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody id="middleware-table-body">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 中间件组管理 -->
+                <div id="groups" class="section" style="display: none;">
+                    <h2>中间件组管理</h2>
+                    <button class="btn btn-primary mb-3" onclick="openAddGroupModal()">添加组</button>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>描述</th>
+                                <th>中间件数量</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="group-table-body">
                             <!-- 动态生成 -->
                         </tbody>
                     </table>
@@ -286,11 +310,106 @@
                             <label for="middleware-description" class="form-label">描述</label>
                             <textarea class="form-control" id="middleware-description"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="middleware-host-ip" class="form-label">主机IP</label>
+                            <input type="text" class="form-control" id="middleware-host-ip" placeholder="例如: 192.168.1.100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-password" class="form-label">密码</label>
+                            <input type="password" class="form-control" id="middleware-password" placeholder="请输入连接密码" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="middleware-group" class="form-label">所属组</label>
+                            <select class="form-select" id="middleware-group">
+                                <option value="">不分组</option>
+                            </select>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                     <button type="button" class="btn btn-primary" onclick="submitAddMiddleware()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 中间件组管理模态框 -->
+    <div class="modal fade" id="groupManagementModal" tabindex="-1" aria-labelledby="groupManagementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="groupManagementModalLabel">中间件组管理</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <button class="btn btn-primary mb-3" onclick="openAddGroupModal()">添加组</button>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>描述</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="group-table-body">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加组模态框 -->
+    <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addGroupModalLabel">添加组</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addGroupForm">
+                        <div class="mb-3">
+                            <label for="group-name" class="form-label">组名称</label>
+                            <input type="text" class="form-control" id="group-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="group-description" class="form-label">描述</label>
+                            <textarea class="form-control" id="group-description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddGroup()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 重命名中间件模态框 -->
+    <div class="modal fade" id="renameMiddlewareModal" tabindex="-1" aria-labelledby="renameMiddlewareModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameMiddlewareModalLabel">重命名中间件</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="renameMiddlewareForm">
+                        <div class="mb-3">
+                            <label for="rename-middleware-name" class="form-label">新名称</label>
+                            <input type="text" class="form-control" id="rename-middleware-name" required>
+                            <input type="hidden" id="rename-middleware-id">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitRenameMiddleware()">保存</button>
                 </div>
             </div>
         </div>
@@ -872,8 +991,11 @@
                         <td>${middleware.type}</td>
                         <td>${middleware.version}</td>
                         <td>${middleware.status}</td>
+                        <td>${middleware.host_ip || '-'}</td>
+                        <td>${middleware.group_id ? middleware.group_id : '-'}</td>
                         <td>
                             <button class="btn btn-sm btn-info" onclick="editMiddleware(${middleware.id})">编辑</button>
+                            <button class="btn btn-sm btn-warning" onclick="openRenameModal(${middleware.id}, '${middleware.name}')">重命名</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteMiddleware(${middleware.id})">删除</button>
                         </td>
                     `;
@@ -1105,6 +1227,7 @@
         // 打开添加中间件模态框
         function openAddMiddlewareModal() {
             document.getElementById('addMiddlewareForm').reset();
+            loadGroups();
             const modal = new bootstrap.Modal(document.getElementById('addMiddlewareModal'));
             modal.show();
         }
@@ -1117,7 +1240,10 @@
                 type: document.getElementById('middleware-type').value,
                 version: document.getElementById('middleware-version').value,
                 status: document.getElementById('middleware-status').value,
-                description: document.getElementById('middleware-description').value
+                description: document.getElementById('middleware-description').value,
+                host_ip: document.getElementById('middleware-host-ip').value,
+                password: document.getElementById('middleware-password').value,
+                group_id: document.getElementById('middleware-group').value ? parseInt(document.getElementById('middleware-group').value) : null
             };
             
             try {
@@ -1318,6 +1444,198 @@
             } catch (error) {
                 console.error('删除中间件失败:', error);
                 alert('删除失败: 网络错误');
+            }
+        }
+        
+        // 打开重命名模态框
+        function openRenameModal(middlewareId, currentName) {
+            document.getElementById('rename-middleware-id').value = middlewareId;
+            document.getElementById('rename-middleware-name').value = currentName;
+            const modal = new bootstrap.Modal(document.getElementById('renameMiddlewareModal'));
+            modal.show();
+        }
+        
+        // 提交重命名
+        async function submitRenameMiddleware() {
+            const middlewareId = document.getElementById('rename-middleware-id').value;
+            const newName = document.getElementById('rename-middleware-name').value;
+            
+            if (!newName.trim()) {
+                alert('请输入新名称');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/${middlewareId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('renameMiddlewareModal'));
+                    modal.hide();
+                    loadMiddlewareData();
+                    alert('重命名成功');
+                } else {
+                    const error = await response.json();
+                    alert('重命名失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('重命名失败:', error);
+                alert('重命名失败: 网络错误');
+            }
+        }
+        
+        // 加载中间件组
+        async function loadGroups() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/groups/`);
+                const groups = await response.json();
+                
+                const select = document.getElementById('middleware-group');
+                select.innerHTML = '<option value="">不分组</option>';
+                
+                groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.textContent = group.name;
+                    select.appendChild(option);
+                });
+                
+                return groups;
+            } catch (error) {
+                console.error('加载中间件组失败:', error);
+                return [];
+            }
+        }
+        
+        // 打开组管理模态框
+        async function openGroupManagementModal() {
+            await loadGroupData();
+            const modal = new bootstrap.Modal(document.getElementById('groupManagementModal'));
+            modal.show();
+        }
+        
+        // 加载组数据
+        async function loadGroupData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/groups/`);
+                const groups = await response.json();
+                const tbody = document.getElementById('group-table-body');
+                tbody.innerHTML = '';
+                
+                for (const group of groups) {
+                    const middlewareResponse = await fetch(`${API_BASE_URL}/middleware/groups/${group.id}/middlewares`);
+                    const middlewares = await middlewareResponse.json();
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${group.id}</td>
+                        <td>${group.name}</td>
+                        <td>${group.description || '-'}</td>
+                        <td>${middlewares.length}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editGroup(${group.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteGroup(${group.id})">删除</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('加载组数据失败:', error);
+            }
+        }
+        
+        // 打开添加组模态框
+        function openAddGroupModal() {
+            document.getElementById('addGroupForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('addGroupModal'));
+            modal.show();
+        }
+        
+        // 提交添加组
+        async function submitAddGroup() {
+            const data = {
+                name: document.getElementById('group-name').value,
+                description: document.getElementById('group-description').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/groups/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addGroupModal'));
+                    modal.hide();
+                    loadGroupData();
+                    alert('组添加成功');
+                } else {
+                    const error = await response.json();
+                    alert('添加失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('添加组失败:', error);
+                alert('添加失败: 网络错误');
+            }
+        }
+        
+        // 删除组
+        async function deleteGroup(groupId) {
+            if (!confirm('确定要删除这个组吗？组内的中间件将不再分组。')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/groups/${groupId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadGroupData();
+                    alert('组删除成功');
+                } else {
+                    const error = await response.json();
+                    alert('删除失败: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('删除组失败:', error);
+                alert('删除失败: 网络错误');
+            }
+        }
+        
+        // 编辑组
+        async function editGroup(groupId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/middleware/groups/${groupId}`);
+                const group = await response.json();
+                
+                const newName = prompt('请输入新的组名称:', group.name);
+                if (newName && newName !== group.name) {
+                    const updateResponse = await fetch(`${API_BASE_URL}/middleware/groups/${groupId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: newName, description: group.description })
+                    });
+                    
+                    if (updateResponse.ok) {
+                        loadGroupData();
+                        alert('组更新成功');
+                    } else {
+                        const error = await updateResponse.json();
+                        alert('更新失败: ' + error.detail);
+                    }
+                }
+            } catch (error) {
+                console.error('编辑组失败:', error);
+                alert('编辑失败: 网络错误');
             }
         }
         

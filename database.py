@@ -6,6 +6,18 @@ import datetime
 
 Base = declarative_base()
 
+# 中间件组模型
+class MiddlewareGroup(Base):
+    __tablename__ = "middleware_group"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), unique=True, index=True)
+    description = Column(Text)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    
+    # 关联中间件
+    middlewares = relationship("Middleware", back_populates="group")
+
 # 中间件模型
 class Middleware(Base):
     __tablename__ = "middleware"
@@ -15,6 +27,9 @@ class Middleware(Base):
     version = Column(String(50))
     status = Column(String(50))
     description = Column(Text)
+    host_ip = Column(String(100))  # 主机IP
+    password = Column(String(255))  # 密码
+    group_id = Column(Integer, ForeignKey("middleware_group.id"))  # 组ID
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     
@@ -23,6 +38,8 @@ class Middleware(Base):
     # 关联拓扑关系
     source_relationships = relationship("MiddlewareRelation", foreign_keys="MiddlewareRelation.source_id", back_populates="source")
     target_relationships = relationship("MiddlewareRelation", foreign_keys="MiddlewareRelation.target_id", back_populates="target")
+    # 关联组
+    group = relationship("MiddlewareGroup", back_populates="middlewares")
 
 # 配置文件模型
 class Config(Base):
