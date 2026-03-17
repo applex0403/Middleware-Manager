@@ -2,6 +2,10 @@
 
 一个统一管理中间件的平台，支持配置管理、拓扑显示等功能。
 
+## 版本信息
+
+当前版本: 1.0
+
 ## 功能特点
 
 - **中间件管理**：添加、编辑、删除中间件
@@ -9,6 +13,7 @@
 - **更新策略**：支持立即更新、定时更新、滚动更新
 - **拓扑显示**：展示中间件之间的逻辑关系
 - **仪表盘**：显示系统概览信息
+- **多平台支持**：支持 Windows、macOS、Linux，提供多种格式安装包
 
 ## 技术栈
 
@@ -55,7 +60,14 @@ Middleware-Manager/
 │   └── config.py           # 配置文件管理 API
 ├── frontend/               # 前端文件
 │   └── index.html         # 前端 Web 界面
+├── install/                # 安装包配置
+│   ├── dist/               # 编译输出目录
+│   ├── package.py          # 打包脚本
+│   ├── INSTALL.md          # 安装说明
+│   └── version.txt         # 版本信息
 ├── requirements.txt        # Python 依赖
+├── README.md               # 项目说明
+├── index.html              # 前端入口（用于 GitHub Pages）
 └── middleware.db           # SQLite 数据库
 ```
 
@@ -63,6 +75,16 @@ Middleware-Manager/
 
 前端页面也可以通过 GitHub Pages 访问：
 [https://applex0403.github.io/Middleware-Manager/](https://applex0403.github.io/Middleware-Manager/)
+
+## 安装包下载
+
+项目提供多种格式的安装包，方便在不同操作系统上安装：
+
+- **Windows**: `.exe` 可执行文件
+- **macOS**: `.dmg` 安装包
+- **Linux**: `.zip`、`.deb`、`.rpm` 安装包
+
+详细安装说明请参考 [INSTALL.md](install/INSTALL.md)。
 
 ## 配置 GitHub Pages
 
