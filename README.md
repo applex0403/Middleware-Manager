@@ -64,6 +64,17 @@ Middleware-Manager/
 前端页面也可以通过 GitHub Pages 访问：
 [https://applex0403.github.io/Middleware-Manager/](https://applex0403.github.io/Middleware-Manager/)
 
+## 配置 GitHub Pages
+
+1. 登录 GitHub 账号
+2. 进入仓库：[https://github.com/applex0403/Middleware-Manager](https://github.com/applex0403/Middleware-Manager)
+3. 点击 "Settings" 选项卡
+4. 在左侧菜单中选择 "Pages"
+5. 在 "Branch" 下拉菜单中选择 "master"
+6. 在 "Folder" 下拉菜单中选择 "/ (root)"
+7. 点击 "Save"
+8. 等待几分钟后，GitHub Pages 将会部署完成
+
 ## 注意事项
 
 - GitHub Pages 版本只能访问前端界面，无法连接到后端 API
